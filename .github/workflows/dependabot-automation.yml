@@ -17,8 +17,8 @@ jobs:
       - id: pr-info
         run: echo title="$(gh pr view '${{ github.event.workflow_run.pull_requests[0].number }}' --repo '${{ github.repository }}' --json title | jq -r .title)" | tee "$GITHUB_OUTPUT"
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN_VICTORLIN_REPO }}
       - if: contains(steps.pr-info.outputs.title, 'bump auspice from')
         run: gh pr merge --repo '${{ github.repository }}' --merge '${{ github.event.workflow_run.pull_requests[0].number }}'
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN_VICTORLIN_REPO }}
