@@ -19,4 +19,4 @@ jobs:
         # Dependabot should ensure CI passes before merging.
         run: gh pr comment "${{ github.event.pull_request.html_url }}" --body "@dependabot merge"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_VICTORLIN_REPO }}
