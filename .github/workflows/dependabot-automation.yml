@@ -1,6 +1,9 @@
 name: Dependabot automation
 
-on: pull_request
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
 
 permissions:
   pull-requests: write
@@ -8,14 +11,14 @@ permissions:
 
 jobs:
   merge-auspice-bump:
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.triggering_actor.login == 'dependabot[bot]'
     runs-on: ubuntu-latest
     steps:
-      - id: metadata
-        uses: dependabot/fetch-metadata@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-      - if: contains(steps.metadata.outputs.dependency-names, 'auspice')
-        run: gh pr merge --merge "${{ github.event.pull_request.html_url }}"
+      - id: pr-info
+        run: echo title="$(gh pr view '${{ github.event.workflow_run.pull_requests[0].number }}' --repo '${{ github.repository }}' --json title | jq -r .title)" | tee "$GITHUB_OUTPUT"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+          GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+      - if: contains(steps.pr-info.outputs.title, 'bump auspice from')
+        run: gh pr merge --repo '${{ github.repository }}' --merge '${{ github.event.workflow_run.pull_requests[0].number }}'
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
