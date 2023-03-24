@@ -15,6 +15,7 @@ jobs:
           node-version: '16'
       - run: node --version
       - run: npm ci
+      - run: exit 1
 
   # XXX TODO: It'd be nice to avoid the rebuild on Heroku and instead deploy
   # the artifacts (source code + generated files + node_modules/) already built
