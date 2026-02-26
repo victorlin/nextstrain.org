@@ -1,3 +1,4 @@
+import escapeHtml from 'escape-html';
 import stream from 'stream';
 import { promisify } from 'util';
 import { PRODUCTION } from '../config.js';
@@ -129,7 +130,42 @@ export async function setup(app) {
       return await endpoints.nextJsApp.handleRequest(req, res);
     }
 
-    utils.verbose(`Sending ${err} error as HTML with Express' default error handler`);
-    return next(err);
+    if (err.status && err.status < 500) {
+      // User error
+      const text = String(err);
+
+      if (isBrowserLike) {
+        utils.verbose(`Sending ${err} error as HTML`);
+
+        const body = escapeHtml(text)
+          .replaceAll('\n', '<br>')
+          .replaceAll('  ', ' &nbsp;');
+
+        return res.status(err.status)
+          .type('text/html')
+          .send(
+            '<!DOCTYPE html>\n' +
+            '<html lang="en">\n' +
+            '<head>\n' +
+            '<meta charset="utf-8">\n' +
+            '<title>Error</title>\n' +
+            '</head>\n' +
+            '<body>\n' +
+            '<pre>' + body + '</pre>\n' +
+            '</body>\n' +
+            '</html>\n'
+          )
+          .end();
+      } else {
+        utils.verbose(`Sending ${err} error as plain text`);
+        return res.status(err.status)
+          .type('text/plain')
+          .send(text)
+          .end();
+      }
+    } else {
+      utils.verbose(`Sending ${err} error as HTML with Express' default error handler`);
+      return next(err);
+    }
   });
 }
